@@ -9,9 +9,21 @@ interface TokenResponse {
 let cachedToken: string | null = null;
 let tokenExpirationTime = 0;
 
-const CLIENT_ID = 'sme-danfe-sisgen-data-proxy';
-const TOKEN_URL = 'https://id-staging.rio.gov.br/realms/rio/protocol/openid-connect/token';
-const API_BASE_URL = 'https://staging.data-proxy.dados.rio';
+const getEnvVar = (key: string, defaultValue?: string): string => {
+  const value = process.env[key] || defaultValue;
+  if (!value) {
+    throw new Error(`A variável de ambiente ${key} não está definida.`);
+  }
+  return value;
+};
+
+// Configurações extraídas das variáveis de ambiente (Server Side)
+const getApiConfig = () => ({
+  clientId: getEnvVar('CLIENT_ID'),
+  tokenUrl: getEnvVar('TOKEN_URL'),
+  apiBaseUrl: getEnvVar('API_BASE_URL'),
+  clientSecret: getEnvVar('CLIENT_SECRET')
+});
 
 export async function getToken(): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
@@ -21,18 +33,14 @@ export async function getToken(): Promise<string> {
     return cachedToken;
   }
 
-  const clientSecret = process.env.CLIENT_SECRET;
+  const config = getApiConfig();
   
-  if (!clientSecret) {
-    throw new Error('CLIENT_SECRET environment variable is not defined');
-  }
-
   const params = new URLSearchParams();
   params.append('grant_type', 'client_credentials');
-  params.append('client_id', CLIENT_ID);
-  params.append('client_secret', clientSecret);
+  params.append('client_id', config.clientId);
+  params.append('client_secret', config.clientSecret);
 
-  const response = await fetch(TOKEN_URL, {
+  const response = await fetch(config.tokenUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -91,7 +99,8 @@ export async function getDanfes(params: GetDanfesParams = {}): Promise<DanfeRow[
     queryParams.append('cnpj', `ilike.*${cnpj}*`);
   }
 
-  const url = `${API_BASE_URL}/tb_sisgen_fornecedores?${queryParams.toString()}`;
+  const config = getApiConfig();
+  const url = `${config.apiBaseUrl}/tb_sisgen_fornecedores?${queryParams.toString()}`;
 
   const response = await fetch(url, {
     headers: {

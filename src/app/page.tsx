@@ -1,4 +1,5 @@
 import { getDanfes, DanfeRow } from '@/services/api';
+import { connection } from 'next/server';
 
 export const instant = false;
 
@@ -7,6 +8,8 @@ export default async function Home({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  await connection();
+  
   const resolvedSearchParams = await searchParams;
   const page = typeof resolvedSearchParams.page === 'string' ? parseInt(resolvedSearchParams.page) : 1;
   const limit = 20;
