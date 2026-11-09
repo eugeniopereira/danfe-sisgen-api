@@ -2,7 +2,16 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, create the .env file
+
+```bash
+CLIENT_ID=put-your-client-id-here
+CLIENT_SECRET=put-your-client-secret-here
+TOKEN_URL=https://url.token.oauth
+API_BASE_URL=https://api.base.url
+```
+
+Run the development server:
 
 ```bash
 npm run dev
